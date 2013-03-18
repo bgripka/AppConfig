@@ -5,6 +5,10 @@ using System.Text;
 
 namespace AppConfig.Database
 {
+    /// <summary>
+    /// Creates a dynamically loaded collection of child objects related to a parent object defining a one to many or many to many relationship. 
+    /// </summary>
+    /// <typeparam name="T">The child type in defining items in the collection</typeparam>
     public class DatabaseEntityCollection<T> : IList<T>
     {
         #region IList<T> Members

@@ -10,6 +10,7 @@ namespace AppConfig.Database
 {
     public static class IDbCommandExtensions
     {
+        #region Json
         public static string ToJson(this IDbCommand command)
         {
             var closeConnection = false;
@@ -48,6 +49,7 @@ namespace AppConfig.Database
 
             return sb.ToString();
         }
+        #endregion
 
         #region AddParameter
         public static IDbDataParameter AddParameter(this IDbCommand command, string ParameterName, DbType DbType)
@@ -70,8 +72,74 @@ namespace AppConfig.Database
         }
         #endregion
 
+        #region Execute Managed
+        /// <summary>
+        /// Executes a non query command just like the ExecuteNonQuery function but manages opening and closing
+        /// the connection if required and provides detailed error messages if the command fails.
+        /// </summary>
+        /// <param name="Command"></param>
+        public static void ExecuteNonQueryManaged(this IDbCommand Command)
+        {
+            if (Command.Connection == null)
+                throw new Exception("To execute this command a connection object is required.");
+
+            bool closeConnection = false;
+            if (Command.Connection.State == ConnectionState.Closed)
+            {
+                Command.Connection.Open();
+                closeConnection = true;
+            }
+
+            try
+            {
+                Command.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                throw new DbCommandException(Command, ex);
+            }
+            finally
+            {
+                if (closeConnection)
+                    Command.Connection.Close();
+            }
+        }
+
+        /// <summary>
+        /// Executes a reader command just like the ExecuteReader function but manages opening and closing
+        /// the connection if required and provides detailed error messages if the command fails.
+        /// </summary>
+        /// <param name="Command"></param>
+        public static IDataReader ExecuteReaderManaged(this IDbCommand Command)
+        {
+            if (Command.Connection == null)
+                throw new Exception("To execute this command a connection object is required.");
+
+            bool closeConnection = false;
+            if (Command.Connection.State == ConnectionState.Closed)
+            {
+                Command.Connection.Open();
+                closeConnection = true;
+            }
+
+            try
+            {
+                return Command.ExecuteReader();
+            }
+            catch (Exception ex)
+            {
+                throw new DbCommandException(Command, ex);
+            }
+            finally
+            {
+                if (closeConnection)
+                    Command.Connection.Close();
+            }
+        }
+        #endregion
+
         #region ExecuteDataTable
-        public static DataSet ExecuteDataTables(this IDbCommand command)
+        public static DataSet ExecuteToDataSet(this IDbCommand command)
         {
             var rtn = new DataSet();
             var da = command.Connection.GetDataAdapter();
@@ -94,9 +162,9 @@ namespace AppConfig.Database
                     command.Connection.Close();
             }
         }
-        public static DataTable ExecuteDataTable(this IDbCommand command)
+        public static DataTable ExecuteToDataTable(this IDbCommand command)
         {
-            var ds = ExecuteDataTables(command);
+            var ds = ExecuteToDataSet(command);
             if (ds.Tables.Count == 0)
                 return null;
             else if (ds.Tables.Count > 1)

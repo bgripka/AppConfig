@@ -6,9 +6,9 @@ using System.Data.SqlClient;
 
 namespace AppConfig.Database.Npgsql
 {
-    public abstract class NpgsqlDataSource : DataSource
+    public class NpgsqlDataAdapter : DataAdapter
     {
-        protected NpgsqlDataSource(string ConnectionString) 
+        public NpgsqlDataAdapter(string ConnectionString) 
             : base(new SqlConnection(ConnectionString), new NpgsqlCommandProvider()) { }
     }
 }

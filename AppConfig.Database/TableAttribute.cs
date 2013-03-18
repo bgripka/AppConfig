@@ -24,6 +24,10 @@ namespace AppConfig.Database
         public string TableName { get; set; }
         public Type EntityType { get; private set; }
 
+        public static TableAttribute GetTable<T>()
+        {
+            return GetTable(typeof(T));
+        }
         public static TableAttribute GetTable(Type type)
         {
             var rtn = type.GetCustomAttributes(type, true).SingleOrDefault() as TableAttribute;

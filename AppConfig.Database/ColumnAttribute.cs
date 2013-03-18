@@ -6,6 +6,9 @@ using System.Reflection;
 
 namespace AppConfig.Database
 {
+    /// <summary>
+    /// Defines the database behavior for a CLR property/database column
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public class ColumnAttribute : Attribute
     {
@@ -53,6 +56,15 @@ namespace AppConfig.Database
         public int Percision { get; set; }
         public int Scale { get; set; }
 
+        /// <summary>
+        /// Gets all database column information for the requested type.
+        /// </summary>
+        /// <typeparam name="T">The type containing column information</typeparam>
+        /// <returns></returns>
+        public static List<ColumnAttribute> GetColumns<T>()
+        {
+            return GetColumns(typeof(T));
+        }
         /// <summary>
         /// Gets all database column information for the requested type.
         /// </summary>

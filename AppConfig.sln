@@ -5,6 +5,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppConfig", "AppConfig\AppC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppConfig.Database", "AppConfig.Database\AppConfig.Database.csproj", "{FFA5B3CF-863B-441D-AB01-7AC0FDC85497}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppConfig.Database.SampleApp", "AppConfig.Database.SampleApp\AppConfig.Database.SampleApp.csproj", "{B26261CB-2290-4C1A-A3C3-E38F57E2A20E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppConfig.Database.SampleBusinessLogic", "AppConfig.Database.SampleBusinessLogic\AppConfig.Database.SampleBusinessLogic.csproj", "{A5B38267-89F5-45CD-A037-29A7253D56E2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +23,14 @@ Global
 		{FFA5B3CF-863B-441D-AB01-7AC0FDC85497}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFA5B3CF-863B-441D-AB01-7AC0FDC85497}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFA5B3CF-863B-441D-AB01-7AC0FDC85497}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B26261CB-2290-4C1A-A3C3-E38F57E2A20E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B26261CB-2290-4C1A-A3C3-E38F57E2A20E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B26261CB-2290-4C1A-A3C3-E38F57E2A20E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B26261CB-2290-4C1A-A3C3-E38F57E2A20E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5B38267-89F5-45CD-A037-29A7253D56E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5B38267-89F5-45CD-A037-29A7253D56E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5B38267-89F5-45CD-A037-29A7253D56E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5B38267-89F5-45CD-A037-29A7253D56E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

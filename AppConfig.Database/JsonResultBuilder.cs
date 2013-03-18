@@ -22,7 +22,8 @@ namespace AppConfig.Database
 
         public string GenerateOutput()
         {
-            return DatabaseEntity.CreateSelectCommand<T>(Columns, WhereClause).ToJson();
+            throw new NotImplementedException();
+            //return DatabaseEntity.CreateSelectCommand<T>(Columns, WhereClause).ToJson();
         }
     }
 

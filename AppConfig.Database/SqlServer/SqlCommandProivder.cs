@@ -178,5 +178,76 @@ namespace AppConfig.Database.SqlServer
 
             return rtn;
         }
+
+        #region CreateSelectCommand
+        public IDbCommand CreateSelectCommand<T>(string WhereClause, string OrderByClause, int Skip, int Take, params string[] Properties)
+        {
+            if (Skip > 0 && string.IsNullOrEmpty(OrderByClause))
+                throw new ArgumentException("When Skip is greater than zero, an order by clause is required.");
+
+            var columns = ColumnAttribute.GetColumns<T>();
+            var table = TableAttribute.GetTable<T>();
+
+            //If the properties collection is null or has no values, put all columns in the collection.
+            if (Properties == null || Properties.Length == 0)
+                Properties = columns.Select(a => a.Property.Name).ToArray();
+
+            //Get all columns that corrispond with the Property Names given
+            var selectedColumns = columns.Where(a => Properties.Contains(a.Property.Name));
+
+            //Prepare the Where Clause
+            if (!string.IsNullOrEmpty(WhereClause))
+            {
+
+            }
+
+            //Prepare the Order By Clause
+            if (!string.IsNullOrEmpty(OrderByClause))
+            {
+
+            }
+
+            //Create a new command from the connection
+            var rtn = new SqlCommand();
+            rtn.CommandType = CommandType.Text;
+
+            if (Skip <= 0)
+            {
+                rtn.CommandText = string.Format(
+                     "select{0} {1}\r\n" +
+                     "from [{2}].[{3}] t1\r\n" +
+                     "{4}" +
+                     "{5}",
+                     (Take > 0) ? " top " + Take : "",
+                     string.Join(", ", "t1.[" + selectedColumns.Select(a => a.ColumnName) + "]"),
+                     table.SchemaName,
+                     table.TableName,
+                     (!string.IsNullOrEmpty(WhereClause)) ? "where " + WhereClause + "\r\n" : "",
+                     (!string.IsNullOrEmpty(OrderByClause)) ? "order by " + OrderByClause + "\r\n" : ""
+                );
+            }
+            else //Skip is greater than 0
+            {
+                rtn.CommandText = string.Format(
+                     "select {0}\r\n" +
+                     "from (\r\n" +
+                        "\tselect row_number() over (order by {4}) as row_number,\r\n" +
+                            "\t\t{0}\r\n" +
+                        "\tfrom [{1}].[{2}] t1\r\n" +
+                        "{3}" +
+                     ") t1\r\n" +
+                     "where t1.row_number between @Skip + 1 and @Skip + @Take\r\n" +
+                     "order by t1.row_number ;",
+                     string.Join(", ", "t1.[" + selectedColumns.Select(a => a.ColumnName) + "]"),
+                     table.SchemaName,
+                     table.TableName,
+                     (!string.IsNullOrEmpty(WhereClause)) ? "\twhere " + WhereClause + "\r\n" : "",
+                     OrderByClause
+                );
+            }
+            return rtn;
+        }
+        #endregion
+
     }
 }

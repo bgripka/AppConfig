@@ -8,12 +8,16 @@ using AppConfig.Database.Reflection;
 
 namespace AppConfig.Database
 {
+    /// <summary>
+    /// The base type for all objects derived from a database table.
+    /// </summary>
     public abstract class DatabaseEntity
     {
         #region Constructors
         public DatabaseEntity() 
         {
-            this.DataSource = DataSource.Current;
+            //var type = this.GetType();
+            throw new NotImplementedException();
         }
         public DatabaseEntity(DataSource DataSource)
         {
@@ -45,22 +49,22 @@ namespace AppConfig.Database
         #endregion
 
         #region CreateSelectCommand
-        public static IDbCommand CreateSelectCommand<T>()
-        {
-            return CreateSelectCommand<T>(ColumnNames);
-        }
-        public static IDbCommand CreateSelectCommand<T>(IEnumerable<string> Columns)
-        {
-            return CreateSelectCommand<T>(Columns, null);
-        }
-        public static IDbCommand CreateSelectCommand<T>(IEnumerable<string> Columns, string WhereClause)
-        {
-            return CreateSelectCommand<T>(Columns, WhereClause, DataSource.Current);
-        }
-        public static IDbCommand CreateSelectCommand<T>(IEnumerable<string> Columns, string WhereClause, DataSource DataSource)
-        {
-            return DataSource.CreateSelectCommand<T>(Columns, WhereClause, null, 0, -1);
-        }
+        //public static IDbCommand CreateSelectCommand<T>() where T:DatabaseEntity
+        //{
+        //    return CreateSelectCommand<T>(ColumnNames);
+        //}
+        //public static IDbCommand CreateSelectCommand<T>(params string[] Properties) where T : DatabaseEntity
+        //{
+        //    return CreateSelectCommand<T>(null, Properties);
+        //}
+        //public static IDbCommand CreateSelectCommand<T>(string WhereClause, params string[] Properties) where T : DatabaseEntity
+        //{
+        //    return CreateSelectCommand<T>(WhereClause, DataSource.Current, Properties);
+        //}
+        //public static IDbCommand CreateSelectCommand<T>(string WhereClause, DataSource DataSource, params string[] Properties) where T : DatabaseEntity
+        //{
+        //    return DataSource.CreateSelectCommand<T>(WhereClause, null, 0, -1, Properties);
+        //}
         #endregion
 
         #region Load
@@ -147,8 +151,8 @@ namespace AppConfig.Database
                 if (ds != entity.DataSource)
                     throw new Exception("All entities to be saved must be from the same data source");
 
-            var command = ds.CommandProvider.GetTableSave(type);
-            command.Connection = ds.Connection;
+            var command = ds.DataAdapter.CommandProvider.GetTableSave(type);
+            command.Connection = ds.DataAdapter.Connection;
             command.Connection.Open();
 
             try
@@ -186,7 +190,7 @@ namespace AppConfig.Database
                     }
 
                     //Execute the save command
-                    ds.ExecuteNonQuery(command);
+                    command.ExecuteNonQueryManaged();
                 }
             }
             finally

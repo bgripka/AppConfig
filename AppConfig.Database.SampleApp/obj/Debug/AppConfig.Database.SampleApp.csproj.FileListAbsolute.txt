@@ -1,0 +1,14 @@
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\bin\Debug\AppConfig.Database.SampleApp.exe.config
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\bin\Debug\AppConfig.Database.SampleApp.exe
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\bin\Debug\AppConfig.Database.SampleApp.pdb
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\obj\Debug\AppConfig.Database.SampleApp.csprojResolveAssemblyReference.cache
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\obj\Debug\AppConfig.Database.SampleApp.Properties.Resources.resources
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\obj\Debug\AppConfig.Database.SampleApp.csproj.GenerateResource.Cache
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\obj\Debug\AppConfig.Database.SampleApp.exe
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\obj\Debug\AppConfig.Database.SampleApp.pdb
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\obj\Debug\AppConfig.Database.SampleApp.FormMain.resources
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\bin\Debug\AppConfig.Database.dll
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\bin\Debug\AppConfig.Database.SampleBusinessLogic.dll
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\bin\Debug\Newtonsoft.Json.dll
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\bin\Debug\AppConfig.Database.SampleBusinessLogic.pdb
+C:\Code\git\AppConfig\AppConfig.Database.SampleApp\bin\Debug\AppConfig.Database.pdb

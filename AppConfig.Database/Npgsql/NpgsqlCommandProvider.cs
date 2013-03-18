@@ -25,6 +25,11 @@ namespace AppConfig.Database.Npgsql
             throw new NotImplementedException();
         }
 
+        public System.Data.IDbCommand CreateSelectCommand<T>(string WhereClause, string OrderByClause, int Skip, int Take, params string[] Properties)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
     }
 }

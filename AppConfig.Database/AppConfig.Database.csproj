@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColumnAttribute.cs" />
+    <Compile Include="DataAdapter.cs" />
     <Compile Include="DatabaseEntityCollection.cs" />
     <Compile Include="DataSource.cs" />
     <Compile Include="DatabaseEntity.cs" />
@@ -68,14 +69,14 @@
     <Compile Include="JsonResultBuilder.cs" />
     <Compile Include="ManyToManyRelationshipAttribute.cs" />
     <Compile Include="Npgsql\NpgsqlCommandProvider.cs" />
-    <Compile Include="Npgsql\NpgsqlDataSource.cs" />
+    <Compile Include="Npgsql\NpgsqlDataAdapter.cs" />
     <Compile Include="OneToManyRelationshipAttribute.cs" />
     <Compile Include="PrimaryKeyAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflection\ColumnInfo.cs" />
     <Compile Include="Reflection\TableInfo.cs" />
     <Compile Include="SqlServer\SqlCommandProivder.cs" />
-    <Compile Include="SqlServer\SqlDataSource.cs" />
+    <Compile Include="SqlServer\SqlDataAdapter.cs" />
     <Compile Include="TableAttribute.cs" />
     <Compile Include="UniqueKeyedDatabaseEntity.cs" />
   </ItemGroup>
