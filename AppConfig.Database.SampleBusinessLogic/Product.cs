@@ -27,7 +27,6 @@ namespace AppConfig.Database.SampleBusinessLogic
         {
             var list = new List<Product>();
             list.Select(a => a.ProductID);
-            list.OrderByDescending(
         }
     }
 }
