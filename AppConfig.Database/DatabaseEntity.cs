@@ -5,6 +5,7 @@ using System.Text;
 using System.Data;
 using System.Reflection;
 using AppConfig.Database.Reflection;
+using System.Configuration;
 
 namespace AppConfig.Database
 {
@@ -13,11 +14,46 @@ namespace AppConfig.Database
     /// </summary>
     public abstract class DatabaseEntity
     {
+
+        private static Dictionary<Type, DataSource> dataSourcesByType = new Dictionary<Type, DataSource>();
+
         #region Constructors
         public DatabaseEntity() 
         {
-            //var type = this.GetType();
-            throw new NotImplementedException();
+            DataSource dataSource;
+            if (dataSourcesByType.TryGetValue(this.GetType(), out dataSource))
+            {
+                this.DataSource = dataSource;
+                return;
+            }
+            
+            //Since we didn't a DataSource object, loop through all connection string objects in the app.config
+            //Find the first connection string for a DataSource that implements an EntitySource property for this type
+            foreach (ConnectionStringSettings connectionString in ConfigurationManager.ConnectionStrings)
+            {
+                var typeName = connectionString.Name;
+                var dataSourceType = Type.GetType(typeName);
+
+                //If this connection string isn't a type name then it isn't meant for us
+                if (dataSourceType == null)
+                    continue;
+
+                //If this type doesn't inherit from DataSource then it isn't meant for us
+                if (!dataSourceType.IsSubclassOf(typeof(DataSource)))
+                    continue;
+
+                //Create an EntitySource type object that uses the current object's type as the generic T parameter
+                var entitySourceType = typeof(EntitySource<>).MakeGenericType(new Type[] { this.GetType() });
+
+                //Determine if the current DataSource type implements a property returning the entitySourceType
+                if (!dataSourceType.GetProperties().Any(a => a.PropertyType == entitySourceType))
+                    continue;
+
+                this.DataSource = DataSource.GetCurrentDataSource(dataSourceType);
+                dataSourcesByType.Add(this.GetType(), this.DataSource);
+
+                break;
+            }
         }
         #endregion
 
@@ -27,14 +63,6 @@ namespace AppConfig.Database
         [System.Web.Script.Serialization.ScriptIgnore]
         [Newtonsoft.Json.JsonIgnore]
         public DataSource DataSource { get; internal protected set; }
-
-        public static string[] ColumnNames
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
         #endregion
 
         #region Reflection

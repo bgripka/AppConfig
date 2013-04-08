@@ -11,16 +11,7 @@ namespace AppConfig.Database.SampleBusinessLogic
     public class Northwind : AppConfig.Database.DataSource
     {
         #region Static Properties
-        public static Northwind Current
-        {
-            get
-            {
-                if (current == null)
-                    current = new Northwind();
-                return current;
-            }
-        }
-        private static Northwind current;
+        public static Northwind Current { get { return DataSource.GetCurrentDataSource<Northwind>(); } } 
         #endregion
 
         #region Constructors

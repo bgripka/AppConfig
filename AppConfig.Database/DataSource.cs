@@ -18,7 +18,7 @@ namespace AppConfig.Database
         #region Constructors
         protected DataSource()
         {
-            var ConnectionStringName = this.GetType().FullName + ".ConnectionString";
+            var ConnectionStringName = this.GetType().FullName;
 
             //Read the connection string object from the configuration file
             var connectionStringObject = ConfigurationManager.ConnectionStrings[ConnectionStringName];
@@ -32,6 +32,39 @@ namespace AppConfig.Database
         {
             this.DataAdapter = DataAdapter;
         }
+        #endregion
+
+        #region Static
+        public static T GetCurrentDataSource<T>() where T : DataSource
+        {
+            return (T)GetCurrentDataSource(typeof(T));
+        }
+        /// <summary>
+        /// Gets or creates and returns the current instance of a DataSource object for the type given.
+        /// </summary>
+        /// <param name="DataSourceType"></param>
+        /// <returns></returns>
+        public static DataSource GetCurrentDataSource(Type DataSourceType)
+        {
+            DataSource rtn;
+            //Return the current instance if it exists
+            if (currentDataSources.TryGetValue(DataSourceType, out rtn))
+                return rtn;
+
+            //Get the constructor for this DataSourceType
+            var constructor = DataSourceType.GetConstructor(Type.EmptyTypes);
+            if(constructor == null)
+                throw new NotImplementedException("The DataSource Type '" + DataSourceType.FullName + "' requires an empty constructor to use this function.");
+
+            //Create the new object using the empty constructor
+            rtn = (DataSource)constructor.Invoke(new object[] { });
+            
+            //Add the new data source to the collection so it isn't created again
+            currentDataSources.Add(DataSourceType, rtn);
+
+            return rtn;
+        }
+        private static Dictionary<Type, DataSource> currentDataSources = new Dictionary<Type, DataSource>();
         #endregion
 
         #region Properties
@@ -62,26 +95,6 @@ namespace AppConfig.Database
             //return CreateCommandFromText([ResourceString]);
         }
         #endregion
-
-        //#region Create Commands
-        //public virtual IDbCommand CreateSelectCommand<T>() where T:DatabaseEntity
-        //{
-        //    return CreateSelectCommand<T>(null, null, 0, -1, null);
-        //}
-        //public virtual IDbCommand CreateSelectCommand<T>(string WhereClause) where T : DatabaseEntity
-        //{
-        //    return CreateSelectCommand<T>(WhereClause, null, 0, -1, null);
-        //}
-        //public virtual IDbCommand CreateSelectCommand<T>(string WhereClause, params string[] Properties) where T : DatabaseEntity
-        //{
-        //    return CreateSelectCommand<T>(WhereClause, null, 0, -1, Properties);
-        //}
-        //public virtual IDbCommand CreateSelectCommand<T>(string WhereClause, string OrderByClause, params string[] Properties) where T : DatabaseEntity
-        //{
-        //    return CreateSelectCommand<T>(WhereClause, OrderByClause, 0, -1, Properties);
-        //}
-        //public abstract IDbCommand CreateSelectCommand<T>(string WhereClause, string OrderByClause, int Skip, int Take, params string[] Properties) where T : DatabaseEntity;
-        //#endregion
 
         #region Where Clause
         /// <summary>
