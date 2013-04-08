@@ -14,15 +14,19 @@ namespace AppConfig.Database.SqlServer
         {
             var table = TableAttribute.GetTable(type);
             var columns = ColumnAttribute.GetColumns(type);
+            var primaryKeyColumns = new List<ColumnAttribute>();
             var expressions = new List<string>();
-            
+
             foreach (var column in columns)
+            {
                 expressions.Add("\t[" + column.ColumnName + "] " + GetDataTypeExpression(column));
+                if (column.IsInPrimaryKey)
+                    primaryKeyColumns.Add(column);
+            }
 
             //Add a primary key if one was specified
-            var primaryKey = type.GetCustomAttributes(typeof(PrimaryKeyAttribute), true).SingleOrDefault() as PrimaryKeyAttribute;
-            if (primaryKey != null)
-                expressions.Add("\tprimary key(" + string.Join(",", primaryKey.ColumnNames) + ")");
+            if (primaryKeyColumns.Count > 0)
+                expressions.Add("\tprimary key(" + string.Join(",", primaryKeyColumns.Select(a => "[" + a.ColumnName + "]") + ")"));
 
             var rtn = string.Format(
                 "create table [{0}].[{1}] (\r\n\t{2}\r\n);",
@@ -49,10 +53,11 @@ namespace AppConfig.Database.SqlServer
             var names = new List<string>();
             var values = new List<string>();
             var updatevalues = new List<string>();
+            var keyWhereValues = new List<string>();
 
             foreach (var column in columns)
             {
-                if (!column.CanInsert && !column.CanUpdate)
+                if (!(column.CanInsert || column.CanUpdate || column.IsInPrimaryKey))
                     continue;
 
                 if (column.CanInsert)
@@ -62,7 +67,10 @@ namespace AppConfig.Database.SqlServer
                 }
 
                 if (column.CanUpdate)
-                    updatevalues.Add("[" + column.ColumnName + "]=@" + column.ColumnName);
+                    updatevalues.Add("\t\t[" + column.ColumnName + "]=@" + column.ColumnName);
+
+                if (column.IsInPrimaryKey)
+                    keyWhereValues.Add("[" + column.ColumnName + "]=@" + column.ColumnName);
 
                 rtn.Parameters.Add(GetCommandParameter(column));
             }
@@ -71,23 +79,25 @@ namespace AppConfig.Database.SqlServer
             var identityExpression = "";
             var identityColumn = columns.SingleOrDefault(a => a.IsIdentity);
             if (identityColumn != null)
-            {
                 identityExpression = "\tselect @@Identity as [" + identityColumn.ColumnName + "];\n";
-            }
 
             rtn.CommandText = string.Format(
-                "if not exists (select * from {0} where Id=@Id) begin\n" +
-                    "\tinsert into {0}({1}) values({2});\n" +
+                "\nif not exists (select * from {0} where {5}) begin\n" +
+                    "\tinsert into {0}({1})\n" +
+                    "\tvalues({2});\n" +
                     "{4}" +
                 "end\n" +
                 "else begin\n" +
-                    "\tupdate {0} set {3} where Id=@Id;\n" +
+                    "\tupdate {0} set\n" +
+                        "{3}\n" +
+                    "\twhere {5};\n" +
                 "end",
-                table.TableName,                            //0 - TableName
-                string.Join(",", names.ToArray()),          //1 - Insert names list
-                string.Join(",", values.ToArray()),         //2 - Insert values list
-                string.Join(",\n", updatevalues.ToArray()), //3 - Update name value pairs
-                identityExpression                          //4 - Identity Expression
+                table.SchemaQualifiedTableName,                         //0 - TableName
+                string.Join(",", names.ToArray()),                      //1 - Insert names list
+                string.Join(",", values.ToArray()),                     //2 - Insert values list
+                string.Join(",\n", updatevalues.ToArray()),             //3 - Update name value pairs
+                identityExpression,                                     //4 - Identity Expression
+                string.Join(" and ", keyWhereValues)                    //5 - Primary Key Where Statement lookup
             );
 
             return rtn;

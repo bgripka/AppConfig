@@ -6,13 +6,12 @@ using System.Data;
 
 namespace AppConfig.Database
 {
-    [PrimaryKey("Id")]
     public abstract class UniqueKeyedDatabaseEntity : DatabaseEntity
     {
         protected UniqueKeyedDatabaseEntity() { Id = Guid.NewGuid(); }
         protected UniqueKeyedDatabaseEntity(Guid Id) { this.Id = Id; }
 
-        [Column(1, Nullable = false)]
+        [Column(1, IsInPrimaryKey=true, Nullable = false)]
         public Guid Id { get; protected set; }
     }
 }

@@ -22,7 +22,7 @@ namespace AppConfig.Database
         {
             var rtn = new List<OneToManyRelationshipAttribute>();
             var props = type.GetProperties();
-            var primaryKey = PrimaryKeyAttribute.GetPrimaryKey(type);
+            var primaryKeyColumns = ColumnAttribute.GetPrimaryKeyColumns(type);
 
             foreach (var prop in props)
             {
@@ -38,7 +38,7 @@ namespace AppConfig.Database
                 relationship.ChildType = propertyType.GetGenericArguments()[0];
 
                 //Create the relationship explicitly if it was left unspecified
-                if (relationship.ForeignKeyColumns == null && primaryKey.ColumnNames.Length == 1 && primaryKey.ColumnNames[0] == "Id" && relationship.ChildType.GetProperty(type.Name + "Id") != null)
+                if (relationship.ForeignKeyColumns == null && primaryKeyColumns.Count == 1 && primaryKeyColumns[0].ColumnName == "Id" && relationship.ChildType.GetProperty(type.Name + "Id") != null)
                     relationship.ForeignKeyColumns = new string[] { type.Name + "Id" };
 
                 //Check to see if any foreign key columns have been defined
@@ -47,16 +47,16 @@ namespace AppConfig.Database
 
                 //Check to make sure the same number of foreign key columns are present in the primary key
                 bool passed = true;
-                if(primaryKey.ColumnNames.Length != relationship.ForeignKeyColumns.Length)
+                if(primaryKeyColumns.Count != relationship.ForeignKeyColumns.Length)
                     passed = false;
                 else
                 {
                     //Get all columns from the child type
                     var childTypeColumns = ColumnAttribute.GetColumns(relationship.ChildType);
-                    relationship.ForeignKeyColumnObjects = new ColumnAttribute[primaryKey.ColumnNames.Length];
-                    for (int i = 0; i < primaryKey.ColumnNames.Length; i++)
+                    relationship.ForeignKeyColumnObjects = new ColumnAttribute[primaryKeyColumns.Count];
+                    for (int i = 0; i < primaryKeyColumns.Count; i++)
                     {
-                        var parentProperty = primaryKey.ColumnObjects[i].Property;
+                        var parentProperty = primaryKeyColumns[i].Property;
                         var childColumn = childTypeColumns.SingleOrDefault(a => a.ColumnName == relationship.ForeignKeyColumns[i]);
 
                         if (childColumn == null)
@@ -67,8 +67,9 @@ namespace AppConfig.Database
                         relationship.ForeignKeyColumnObjects[i] = childColumn;
                     }
                 }
+
                 if (!passed)
-                    throw new Exception("The one to many relationship property '" + prop.Name + "' on type '" + type.FullName + "' is invalid because the entity's primary key column(s) '" + string.Join(", ", primaryKey.ColumnNames) + "' don't match the foreign key column(s) '" + string.Join(", ", relationship.ForeignKeyColumns) + "' in number, data type, and order.");
+                    throw new Exception("The one to many relationship property '" + prop.Name + "' on type '" + type.FullName + "' is invalid because the entity's primary key column(s) '" + string.Join(", ", primaryKeyColumns.Select(a => a.ColumnName)) + "' don't match the foreign key column(s) '" + string.Join(", ", relationship.ForeignKeyColumns) + "' in number, data type, and order.");
 
                 rtn.Add(relationship);
             }

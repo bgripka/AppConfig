@@ -19,6 +19,7 @@ namespace AppConfig.Database
             //Set the default values
             this.CanInsert = true;
             this.CanUpdate = true;
+            this.IsInPrimaryKey = false;
             this.Nullable = true;
             this.LengthType = Database.LengthType.Variable;
             this.EnumStorageMethod = Database.EnumStorageMethod.Text;
@@ -39,6 +40,12 @@ namespace AppConfig.Database
         public int Length { get; set; }
         public LengthType LengthType { get; set; }
         public bool IsIdentity { get; set; }
+        public bool IsInPrimaryKey 
+        {
+            get { return (isInPrimaryKey || IsIdentity); }
+            set { isInPrimaryKey = value; } 
+        }
+        private bool isInPrimaryKey;
         public bool CanInsert
         {
             get { return (IsIdentity) ? false : canInsert; }
@@ -55,6 +62,8 @@ namespace AppConfig.Database
         public TimestampBehavior TimestampBehavior { get; set; }
         public int Percision { get; set; }
         public int Scale { get; set; }
+
+        
 
         /// <summary>
         /// Gets all database column information for the requested type.
@@ -94,6 +103,16 @@ namespace AppConfig.Database
                 rtn.Add(column);
             }
             return rtn.OrderBy(a => a.Order).ToList();
+        }
+
+        public static List<ColumnAttribute> GetPrimaryKeyColumns<T>()
+        {
+            return GetPrimaryKeyColumns(typeof(T));
+        }
+
+        public static List<ColumnAttribute> GetPrimaryKeyColumns(Type type)
+        {
+            return GetColumns(type).Where(a => a.IsInPrimaryKey).ToList();
         }
     }
 }

@@ -8,7 +8,10 @@ namespace AppConfig.Database
     [AttributeUsage(AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
     public class TableAttribute : Attribute
     {
-        public TableAttribute() { }
+        public TableAttribute() 
+        {
+            this.SchemaName = "dbo";
+        }
         public TableAttribute(string TableName)
         {
             this.SchemaName = "dbo";
@@ -24,13 +27,15 @@ namespace AppConfig.Database
         public string TableName { get; set; }
         public Type EntityType { get; private set; }
 
+        public string SchemaQualifiedTableName { get { return "[" + SchemaName + "].[" + TableName + "]"; } }
+
         public static TableAttribute GetTable<T>()
         {
             return GetTable(typeof(T));
         }
         public static TableAttribute GetTable(Type type)
         {
-            var rtn = type.GetCustomAttributes(type, true).SingleOrDefault() as TableAttribute;
+            var rtn = type.GetCustomAttributes(typeof(TableAttribute), true).SingleOrDefault() as TableAttribute;
             
             if (rtn == null)
                 rtn = new TableAttribute(type.Name);

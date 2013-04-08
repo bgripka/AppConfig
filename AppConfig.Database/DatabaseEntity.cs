@@ -158,11 +158,13 @@ namespace AppConfig.Database
                     //Set parameter values before execution
                     foreach (var column in columns)
                     {
-                        if (!column.CanInsert && !column.CanUpdate)
+                        if (!(column.CanInsert || column.CanUpdate || column.IsInPrimaryKey))
                             continue;
+
                         var param = command.Parameters[column.ColumnName] as IDbDataParameter;
                         var value = column.Property.GetValue(entity, null);
                         var propertyType = column.Property.PropertyType;
+
                         if (value == null)
                             param.Value = DBNull.Value;
                         else if (propertyType.IsEnum)

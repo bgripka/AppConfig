@@ -71,7 +71,6 @@
     <Compile Include="Npgsql\NpgsqlCommandProvider.cs" />
     <Compile Include="Npgsql\NpgsqlDataAdapter.cs" />
     <Compile Include="OneToManyRelationshipAttribute.cs" />
-    <Compile Include="PrimaryKeyAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflection\ColumnInfo.cs" />
     <Compile Include="Reflection\TableInfo.cs" />
