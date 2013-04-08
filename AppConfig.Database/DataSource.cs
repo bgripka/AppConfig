@@ -18,7 +18,8 @@ namespace AppConfig.Database
         #region Constructors
         protected DataSource()
         {
-            var ConnectionStringName = this.GetType().FullName;
+            var type = this.GetType();
+            var ConnectionStringName = type.FullName + ", " + type.Assembly.GetName().Name;
 
             //Read the connection string object from the configuration file
             var connectionStringObject = ConfigurationManager.ConnectionStrings[ConnectionStringName];

@@ -25,6 +25,13 @@ namespace AppConfig.Database.SampleApp
                 case "Get Product by Name":
                     BindToTreeView(Northwind.Current.Products.Where(a => a.ProductName == "Tofu"));
                     break;
+                case "Save New Product":
+                    var product = new Product()
+                    {
+                        ProductName = "New Book"
+                    };
+                    product.Save();
+                    break;
             }
         }
 

@@ -48,7 +48,8 @@
             // 
             this.cmbCallFunction.FormattingEnabled = true;
             this.cmbCallFunction.Items.AddRange(new object[] {
-            "Get Product by Name"});
+            "Get Product by Name",
+            "Save New Product"});
             this.cmbCallFunction.Location = new System.Drawing.Point(129, 12);
             this.cmbCallFunction.Name = "cmbCallFunction";
             this.cmbCallFunction.Size = new System.Drawing.Size(184, 21);
