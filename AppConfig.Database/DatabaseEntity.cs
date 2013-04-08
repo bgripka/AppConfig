@@ -19,10 +19,6 @@ namespace AppConfig.Database
             //var type = this.GetType();
             throw new NotImplementedException();
         }
-        public DatabaseEntity(DataSource DataSource)
-        {
-            this.DataSource = DataSource;
-        }
         #endregion
 
         #region Properties
@@ -48,39 +44,8 @@ namespace AppConfig.Database
         }
         #endregion
 
-        #region CreateSelectCommand
-        //public static IDbCommand CreateSelectCommand<T>() where T:DatabaseEntity
-        //{
-        //    return CreateSelectCommand<T>(ColumnNames);
-        //}
-        //public static IDbCommand CreateSelectCommand<T>(params string[] Properties) where T : DatabaseEntity
-        //{
-        //    return CreateSelectCommand<T>(null, Properties);
-        //}
-        //public static IDbCommand CreateSelectCommand<T>(string WhereClause, params string[] Properties) where T : DatabaseEntity
-        //{
-        //    return CreateSelectCommand<T>(WhereClause, DataSource.Current, Properties);
-        //}
-        //public static IDbCommand CreateSelectCommand<T>(string WhereClause, DataSource DataSource, params string[] Properties) where T : DatabaseEntity
-        //{
-        //    return DataSource.CreateSelectCommand<T>(WhereClause, null, 0, -1, Properties);
-        //}
-        #endregion
-
         #region Load
-        protected static List<T> Load<T>(IDataReader dataReader) where T : DatabaseEntity
-        {
-            var type = typeof(T);
-            var constructor = type.GetConstructor(new Type[] { typeof(IDataReader) });
-
-            //Create a collection and construct an object for each row in the data reader
-            var rtn = new List<T>();
-            while (dataReader.Read())
-                rtn.Add((T)constructor.Invoke(new object[] { dataReader }));
-            return rtn;
-        }
-
-        protected internal void Load(IDataReader dataReader)
+        internal void Load(IDataReader dataReader)
         {
             var type = this.GetType();
             for (int i = 0; i < dataReader.FieldCount; i++)

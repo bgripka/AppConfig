@@ -13,5 +13,6 @@ namespace AppConfig.Database
         string GetCreateTableConstraints(Type type);
         IDbCommand GetTableSave(Type type);
         IDbCommand CreateSelectCommand<T>(Expression<Func<T, bool>> WhereClause, string OrderByClause, int Skip, int Take, params string[] Properties);
+        string TranslateWhereClause<T>(Expression<Func<T, bool>> WhereClause);
     }
 }

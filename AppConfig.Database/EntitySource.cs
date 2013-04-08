@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -15,22 +16,48 @@ namespace AppConfig.Database
     {
         public EntitySource(DataSource DataSource)
         {
-
+            this.dataSource = DataSource;
         }
 
         private DataSource dataSource;
 
+        #region Load
+        public List<T> Load(IDataReader dataReader)
+        {
+            var type = typeof(T);
+            //Get the empty constructor for this type
+            var constructor = type.GetConstructor(Type.EmptyTypes);
+
+            //Create a collection and construct an object for each row in the data reader
+            var rtn = new List<T>();
+            while (dataReader.Read())
+            {
+                T dataItem = (T)constructor.Invoke(new object[0]);
+                dataItem.DataSource = dataSource;
+                dataItem.Load(dataReader);
+                rtn.Add(dataItem);
+            }
+            return rtn;
+        }
+        #endregion
+
         #region Single
-        public T Single(string Filter)
+        public T Single(Expression<Func<T, bool>> Filter)
         {
             var rtn = SingleOrDefault(Filter);
             if (rtn == null)
-                throw new Exception();
+                throw new InvalidOperationException("The input sequence is empty.");
             return rtn;
         }
-        public T SingleOrDefault(string Filter)
+        public T SingleOrDefault(Expression<Func<T, bool>> Filter)
         {
-            throw new NotImplementedException();
+            var result = Where(Filter);
+            if (result.Count == 1)
+                return result.First();
+            else if (result.Count == 0)
+                return null;
+            else
+                throw new InvalidOperationException("The input sequence contains more than one element.");
         }
         #endregion
 
@@ -51,7 +78,9 @@ namespace AppConfig.Database
         {
             var command = this.dataSource.DataAdapter.CommandProvider.CreateSelectCommand<T>(
                 Filter, null, Skip, Take, Properties);
+            return Load(command.ExecuteReader());
         }
         #endregion
 
     }
+}

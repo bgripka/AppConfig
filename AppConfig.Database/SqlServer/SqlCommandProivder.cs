@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq.Expressions;
 
 namespace AppConfig.Database.SqlServer
 {
@@ -92,7 +93,6 @@ namespace AppConfig.Database.SqlServer
             return rtn;
         }
 
-
         public static SqlParameter GetCommandParameter(ColumnAttribute column)
         {
             var type = column.Property.PropertyType;
@@ -179,8 +179,7 @@ namespace AppConfig.Database.SqlServer
             return rtn;
         }
 
-        #region CreateSelectCommand
-        public IDbCommand CreateSelectCommand<T>(string WhereClause, string OrderByClause, int Skip, int Take, params string[] Properties)
+        public IDbCommand CreateSelectCommand<T>(Expression<Func<T, bool>> WhereClause, string OrderByClause, int Skip, int Take, params string[] Properties)
         {
             if (Skip > 0 && string.IsNullOrEmpty(OrderByClause))
                 throw new ArgumentException("When Skip is greater than zero, an order by clause is required.");
@@ -194,12 +193,6 @@ namespace AppConfig.Database.SqlServer
 
             //Get all columns that corrispond with the Property Names given
             var selectedColumns = columns.Where(a => Properties.Contains(a.Property.Name));
-
-            //Prepare the Where Clause
-            if (!string.IsNullOrEmpty(WhereClause))
-            {
-
-            }
 
             //Prepare the Order By Clause
             if (!string.IsNullOrEmpty(OrderByClause))
@@ -222,7 +215,7 @@ namespace AppConfig.Database.SqlServer
                      string.Join(", ", "t1.[" + selectedColumns.Select(a => a.ColumnName) + "]"),
                      table.SchemaName,
                      table.TableName,
-                     (!string.IsNullOrEmpty(WhereClause)) ? "where " + WhereClause + "\r\n" : "",
+                     (WhereClause != null) ? "where " + TranslateWhereClause<T>(WhereClause) + "\r\n" : "",
                      (!string.IsNullOrEmpty(OrderByClause)) ? "order by " + OrderByClause + "\r\n" : ""
                 );
             }
@@ -241,13 +234,17 @@ namespace AppConfig.Database.SqlServer
                      string.Join(", ", "t1.[" + selectedColumns.Select(a => a.ColumnName) + "]"),
                      table.SchemaName,
                      table.TableName,
-                     (!string.IsNullOrEmpty(WhereClause)) ? "\twhere " + WhereClause + "\r\n" : "",
+                     (WhereClause != null) ? "where " + TranslateWhereClause<T>(WhereClause) + "\r\n" : "",
                      OrderByClause
                 );
             }
             return rtn;
         }
-        #endregion
+
+        public string TranslateWhereClause<T>(Expression<Func<T, bool>> WhereClause)
+        {
+            throw new NotImplementedException();
+        }
 
     }
 }
