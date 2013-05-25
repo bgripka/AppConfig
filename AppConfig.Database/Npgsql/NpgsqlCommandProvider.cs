@@ -31,6 +31,11 @@ namespace AppConfig.Database.Npgsql
             throw new NotImplementedException();
         }
 
+        public System.Data.IDbCommand GetEntityByKey(string[] columnNames)
+        {
+            throw new NotImplementedException();
+        }
+
         public string TranslateWhereClause<T>(Expression<Func<T, bool>> WhereClause)
         {
             throw new NotImplementedException();

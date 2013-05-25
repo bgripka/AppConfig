@@ -10,7 +10,7 @@ namespace AppConfig.Database
         protected IntKeyedDatabaseEntity() { }
         protected IntKeyedDatabaseEntity(int Id) { this.Id = Id; }
 
-        [Column(1, IsInPrimaryKey=true, Nullable = false)]
+        [Column(1, IsInPrimaryKey=true, Nullable = false, IsIdentity = true)]
         public int Id { get; protected set; }
     }
 
