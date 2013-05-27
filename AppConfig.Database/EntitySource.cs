@@ -41,6 +41,28 @@ namespace AppConfig.Database
         }
         #endregion
 
+        #region OrderBy
+        public List<T> OrderBy(Expression<Func<T, dynamic>> OrderBy)
+        {
+            return Where(null, OrderBy, -1, -1);
+        }
+        public List<T> OrderBy(Expression<Func<T, dynamic>> OrderBy, int Skip, int Take)
+        {
+            return Where(null, OrderBy, Skip, Take);
+        }
+        #endregion
+
+        #region Select
+        public List<T> Select(Expression<Func<T, dynamic>> Properties)
+        {
+            return Where(null, Properties, null, -1, -1);
+        }
+        public List<T> Select(Expression<Func<T, dynamic>> Properties, Expression<Func<T, dynamic>> OrderBy, int Skip, int Take)
+        {
+            return Where(null, Properties, OrderBy, Skip, Take);
+        }
+        #endregion
+
         #region Single
         public T Single(Expression<Func<T, bool>> Filter)
         {
@@ -50,6 +72,10 @@ namespace AppConfig.Database
             return rtn;
         }
         public T SingleOrDefault(Expression<Func<T, bool>> Filter)
+        {
+            return SingleOrDefault(Filter, null);
+        }
+        public T SingleOrDefault(Expression<Func<T, bool>> Filter, T Default)
         {
             var result = Where(Filter);
             if (result.Count == 1)
@@ -64,21 +90,42 @@ namespace AppConfig.Database
         #region Where
         public List<T> Where(Expression<Func<T, bool>> Filter)
         {
-            return Where(Filter, 0, -1, null);
+            return Where(Filter, null, null, 0, -1);
         }
-        public List<T> Where(Expression<Func<T, bool>> Filter, params string[] Properties)
+        public List<T> Where(Expression<Func<T, bool>> Filter, Expression<Func<T, dynamic>> Properties)
         {
-            return Where(Filter, 0, -1, Properties);
+            return Where(Filter, null, null, 0, -1);
         }
-        public List<T> Where(Expression<Func<T, bool>> Filter, int Skip, int Take)
+        public List<T> Where(Expression<Func<T, bool>> Filter, Expression<Func<T, dynamic>> OrderBy, int Skip, int Take)
         {
-            return Where(Filter, Skip, Take, null);
+            return Where(Filter, null, OrderBy, Skip, Take);
         }
-        public List<T> Where(Expression<Func<T, bool>> Filter, int Skip, int Take, params string[] Properties)
+        public List<T> Where(Expression<Func<T, bool>> Filter, Expression<Func<T, dynamic>> Properties, Expression<Func<T, dynamic>> OrderBy, int Skip, int Take)
         {
             var command = this.dataSource.DataAdapter.CommandProvider.CreateSelectCommand<T>(
-                Filter, null, Skip, Take, Properties);
-            return Load(command.ExecuteReader());
+                Properties, Filter, OrderBy, Skip, Take);
+            command.Connection = dataSource.DataAdapter.Connection;
+            bool closeConnection = (command.Connection.State != ConnectionState.Open);
+            try
+            {
+                if (closeConnection)
+                    command.Connection.Open();
+
+                var r = command.ExecuteReader();
+                try
+                {
+                    return Load(r);
+                }
+                finally
+                {
+                    r.Close();
+                }
+            }
+            finally
+            {
+                if (closeConnection)
+                    command.Connection.Close();
+            }
         }
         #endregion
 

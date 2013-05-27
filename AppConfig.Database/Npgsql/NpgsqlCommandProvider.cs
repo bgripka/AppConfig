@@ -6,40 +6,40 @@ using System.Text;
 
 namespace AppConfig.Database.Npgsql
 {
-    public class NpgsqlCommandProvider : ICommandProvider
-    {
+    //public class NpgsqlCommandProvider : ICommandProvider
+    //{
 
-        #region ICommandProvider Members
+    //    #region ICommandProvider Members
 
-        public string GetCreateTable(Type type)
-        {
-            throw new NotImplementedException();
-        }
+    //    public string GetCreateTable(Type type)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
 
-        public string GetCreateTableConstraints(Type type)
-        {
-            throw new NotImplementedException();
-        }
+    //    public string GetCreateTableConstraints(Type type)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
 
-        public System.Data.IDbCommand GetTableSave(Type type)
-        {
-            throw new NotImplementedException();
-        }
+    //    public System.Data.IDbCommand GetTableSave(Type type)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
 
-        public System.Data.IDbCommand CreateSelectCommand<T>(Expression<Func<T, bool>> WhereClause, string OrderByClause, int Skip, int Take, params string[] Properties)
-        {
-            throw new NotImplementedException();
-        }
+    //    public System.Data.IDbCommand CreateSelectCommand<T>(Expression<Func<T, bool>> WhereClause, Expression<Func<T, dynamic>> OrderByClause, int Skip, int Take, params string[] Properties)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
 
-        public System.Data.IDbCommand GetEntityByKey(string[] columnNames)
-        {
-            throw new NotImplementedException();
-        }
+    //    public string TranslateWhereClause<T>(Expression<Func<T, bool>> WhereClause)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
 
-        public string TranslateWhereClause<T>(Expression<Func<T, bool>> WhereClause)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
-    }
+    //    public string TranslateOrderByClause<T>(Expression<Func<T, dynamic>> OrderByClause)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //    #endregion
+    //}
 }

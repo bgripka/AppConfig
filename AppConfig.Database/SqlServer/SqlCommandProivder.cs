@@ -189,26 +189,13 @@ namespace AppConfig.Database.SqlServer
             return rtn;
         }
 
-        public IDbCommand CreateSelectCommand<T>(Expression<Func<T, bool>> WhereClause, string OrderByClause, int Skip, int Take, params string[] Properties)
+        public IDbCommand CreateSelectCommand<T>(Expression<Func<T, dynamic>> SelectClause, Expression<Func<T, bool>> WhereClause, Expression<Func<T, dynamic>> OrderByClause, int Skip, int Take)
         {
-            if (Skip > 0 && string.IsNullOrEmpty(OrderByClause))
+            if (Skip > 0 && OrderByClause == null)
                 throw new ArgumentException("When Skip is greater than zero, an order by clause is required.");
 
             var columns = ColumnAttribute.GetColumns<T>();
             var table = TableAttribute.GetTable<T>();
-
-            //If the properties collection is null or has no values, put all columns in the collection.
-            if (Properties == null || Properties.Length == 0)
-                Properties = columns.Select(a => a.Property.Name).ToArray();
-
-            //Get all columns that corrispond with the Property Names given
-            var selectedColumns = columns.Where(a => Properties.Contains(a.Property.Name));
-
-            //Prepare the Order By Clause
-            if (!string.IsNullOrEmpty(OrderByClause))
-            {
-
-            }
 
             //Create a new command from the connection
             var rtn = new SqlCommand();
@@ -222,11 +209,11 @@ namespace AppConfig.Database.SqlServer
                      "{4}" +
                      "{5}",
                      (Take > 0) ? " top " + Take : "",
-                     string.Join(", ", "t1.[" + selectedColumns.Select(a => a.ColumnName) + "]"),
+                     (SelectClause != null) ? TranslateSelectClause<T>(SelectClause) : string.Join(", ", columns.Select(a => "t1.[" + a.ColumnName + "]")),
                      table.SchemaName,
                      table.TableName,
                      (WhereClause != null) ? "where " + TranslateWhereClause<T>(WhereClause) + "\r\n" : "",
-                     (!string.IsNullOrEmpty(OrderByClause)) ? "order by " + OrderByClause + "\r\n" : ""
+                     (OrderByClause != null) ? "order by " + TranslateOrderByClause<T>(OrderByClause) + "\r\n" : ""
                 );
             }
             else //Skip is greater than 0
@@ -241,7 +228,7 @@ namespace AppConfig.Database.SqlServer
                      ") t1\r\n" +
                      "where t1.row_number between @Skip + 1 and @Skip + @Take\r\n" +
                      "order by t1.row_number ;",
-                     string.Join(", ", "t1.[" + selectedColumns.Select(a => a.ColumnName) + "]"),
+                     (SelectClause != null) ? TranslateSelectClause<T>(SelectClause) : string.Join(", ", columns.Select(a => "t1.[" + a.ColumnName + "]")),
                      table.SchemaName,
                      table.TableName,
                      (WhereClause != null) ? "where " + TranslateWhereClause<T>(WhereClause) + "\r\n" : "",
@@ -251,14 +238,121 @@ namespace AppConfig.Database.SqlServer
             return rtn;
         }
 
-        public IDbCommand GetEntityByKey(string[] columnNames)
+        public string TranslateSelectClause<T>(Expression<Func<T, dynamic>> SelectClause)
         {
-            throw new NotImplementedException();
+            var rtn = ParseExpression(SelectClause.Body);
+            return rtn;
         }
 
         public string TranslateWhereClause<T>(Expression<Func<T, bool>> WhereClause)
         {
-            throw new NotImplementedException();
+            var rtn = ParseExpression(WhereClause.Body);
+            return rtn;
+        }
+
+        public string TranslateOrderByClause<T>(Expression<Func<T, dynamic>> OrderByClause)
+        {
+            var rtn = ParseExpression(OrderByClause.Body);
+            return rtn;
+        }
+
+        private string ParseExpression(Expression exp)
+        {
+            switch (exp.NodeType)
+            {
+                case ExpressionType.AndAlso:
+                {
+                    var tExp = exp as BinaryExpression;
+                    return ParseExpression(tExp.Left) + " and " + ParseExpression(tExp.Right);
+                }
+                case ExpressionType.Constant:
+                {
+                    var tExp = exp as ConstantExpression;
+                    if (tExp.Type == typeof(string))
+                    {
+                        if (tExp.Value == null)
+                            return "null";
+                        else
+                            return "'" + ((string)tExp.Value).Replace("'", "''") + "'";
+                    }
+                    else if (tExp.Type == typeof(DateTime))
+                    {
+                        if (tExp.Value == null)
+                            return "null";
+                        else
+                            return string.Format("'{0:g}'", (DateTime)tExp.Value);
+                    }
+                    else if (new Type[] { typeof(int), typeof(double), typeof(Int16), typeof(Int64), typeof(decimal) }.Contains(tExp.Type))
+                    {
+                        if (tExp.Value == null)
+                            return "null";
+                        else
+                            return Convert.ToString(tExp.Value);
+                    }
+                    else
+                        throw new NotImplementedException("A constant expression for type '" + tExp.Type.FullName + "' is not supported.");
+                }
+                case ExpressionType.Equal:
+                {
+                    var tExp = exp as BinaryExpression;
+                    return ParseExpression(tExp.Left) + " = " + ParseExpression(tExp.Right);
+                }
+                case ExpressionType.GreaterThan:
+                {
+                    var tExp = exp as BinaryExpression;
+                    return ParseExpression(tExp.Left) + " > " + ParseExpression(tExp.Right);
+                }
+                case ExpressionType.GreaterThanOrEqual:
+                {
+                    var tExp = exp as BinaryExpression;
+                    return ParseExpression(tExp.Left) + " >= " + ParseExpression(tExp.Right);
+                }
+                case ExpressionType.LessThan:
+                {
+                    var tExp = exp as BinaryExpression;
+                    return ParseExpression(tExp.Left) + " < " + ParseExpression(tExp.Right);
+                }
+                case ExpressionType.LessThanOrEqual:
+                {
+                    var tExp = exp as BinaryExpression;
+                    return ParseExpression(tExp.Left) + " <= " + ParseExpression(tExp.Right);
+                }                
+                case ExpressionType.MemberAccess:
+                {
+                    var tExp = exp as MemberExpression;
+                    return string.Format("t1.[{0}]", tExp.Member.Name);
+                }
+                case ExpressionType.New:
+                {
+                    var tExp = exp as NewExpression;
+                    return string.Join(", ", tExp.Arguments.Select(a => ParseExpression(a)));
+                }
+                case ExpressionType.NewArrayInit:
+                {
+                    var tExp = exp as NewArrayExpression;
+                    return string.Join(", ", tExp.Expressions.Select(a => ParseExpression(a)));
+                }
+                case ExpressionType.NotEqual:
+                {
+                    var tExp = exp as BinaryExpression;
+                    return ParseExpression(tExp.Left) + " <> " + ParseExpression(tExp.Right);
+                }
+                case ExpressionType.OrElse:
+                {
+                    var tExp = exp as BinaryExpression;
+                    return ParseExpression(tExp.Left) + " or " + ParseExpression(tExp.Right);
+                }
+                case ExpressionType.Call:
+                {
+                    var tExp = exp as MethodCallExpression;
+                    if (tExp.Method.DeclaringType == typeof(System.Linq.Enumerable) && tExp.Method.Name == "Contains")
+                        return ParseExpression(tExp.Arguments[1]) + " in(" + ParseExpression(tExp.Arguments[0]) + ")";
+                    else
+                        throw new NotSupportedException("The Method Call '" + tExp.Method.Name + "' for Type '" + tExp.Method.DeclaringType.FullName + "' is not supported.");
+                }
+                default:
+                    throw new NotImplementedException("Expression Type '" + exp.NodeType + "', ClassType '" + exp.GetType().FullName + "' is not supported.");
+            }
         }
 
     }

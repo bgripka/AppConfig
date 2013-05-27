@@ -23,10 +23,5 @@ namespace AppConfig.Database.SampleBusinessLogic
         public int CategoryID { get; set; }
         #endregion
 
-        public void Test()
-        {
-            var list = new List<Product>();
-            list.Select(a => a.ProductID);
-        }
     }
 }
