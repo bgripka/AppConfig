@@ -16,12 +16,17 @@ namespace AppConfig.Database.SampleBusinessLogic
         [Column(2, Length = 40, Nullable = false)]
         public string ProductName { get; set; }
 
-        [Column(3, Nullable = false)]
-        public int SupplierID { get; set; }
+        //[Column(3, Nullable = false)]
+        //public int SupplierID { get; set; }
 
-        [Column(4, Nullable = false)]
-        public int CategoryID { get; set; }
+        //[Column(4, Nullable = false)]
+        //public int? CategoryID { get; set; }
         #endregion
+
+        public override string ToString()
+        {
+            return ProductName;
+        }
 
     }
 }

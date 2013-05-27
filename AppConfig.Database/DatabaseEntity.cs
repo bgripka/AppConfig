@@ -153,6 +153,7 @@ namespace AppConfig.Database
                 command.Prepare();
 
                 var columns = ColumnAttribute.GetColumns(type);
+                var keys = columns.Where(a => a.IsInPrimaryKey).ToList();
                 foreach (var entity in Entities)
                 {
                     //Set parameter values before execution
@@ -184,8 +185,10 @@ namespace AppConfig.Database
                             param.Value = value;
                     }
 
-                    //Execute the save command
-                    command.ExecuteNonQueryManaged();
+                    if (keys.Count == 1 && keys[0].IsIdentity)
+                        keys[0].Property.SetValue(entity, command.ExecuteScalarManaged());
+                    else
+                        command.ExecuteNonQueryManaged();
                 }
             }
             finally

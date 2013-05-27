@@ -77,9 +77,13 @@ namespace AppConfig.Database.SqlServer
 
             //Check for identity column and return the identity id found
             var identityExpression = "";
+            var updateIdentityExpression = "";
             var identityColumn = columns.SingleOrDefault(a => a.IsIdentity);
             if (identityColumn != null)
-                identityExpression = "\tselect @@Identity as [" + identityColumn.ColumnName + "];\n";
+            {
+                identityExpression = "\tselect convert(" + GetDataType(identityColumn) + ", @@Identity) as [" + identityColumn.ColumnName + "];\n";
+                updateIdentityExpression = "\tselect @" + identityColumn.ColumnName + ";\n";
+            }
 
             rtn.CommandText = string.Format(
                 "\nif not exists (select * from {0} where {5}) begin\n" +
@@ -91,13 +95,15 @@ namespace AppConfig.Database.SqlServer
                     "\tupdate {0} set\n" +
                         "{3}\n" +
                     "\twhere {5};\n" +
+                    "{6}" +
                 "end",
                 table.SchemaQualifiedTableName,                         //0 - TableName
                 string.Join(",", names.ToArray()),                      //1 - Insert names list
                 string.Join(",", values.ToArray()),                     //2 - Insert values list
                 string.Join(",\n", updatevalues.ToArray()),             //3 - Update name value pairs
                 identityExpression,                                     //4 - Identity Expression
-                string.Join(" and ", keyWhereValues)                    //5 - Primary Key Where Statement lookup
+                string.Join(" and ", keyWhereValues),                   //5 - Primary Key Where Statement lookup
+                updateIdentityExpression                                //6 - Update Return Identity Id
             );
 
             return rtn;
@@ -142,10 +148,10 @@ namespace AppConfig.Database.SqlServer
                 throw new NotSupportedException("The property type '" + type.FullName + "' is not mapped to a '" + typeof(SqlDbType).FullName + "' type.");
         }
 
-        public static string GetDataTypeExpression(ColumnAttribute column)
+        public static string GetDataType(ColumnAttribute column)
         {
-            var rtn = "";
             var type = column.Property.PropertyType;
+            var rtn = "";
 
             if (type.IsEnum)
             {
@@ -184,6 +190,13 @@ namespace AppConfig.Database.SqlServer
 
             if (column.Length > 0)
                 rtn += " (" + column.Length + ")";
+
+            return rtn;
+        }
+
+        public static string GetDataTypeExpression(ColumnAttribute column)
+        {
+            var rtn = GetDataType(column);
             rtn += (column.Nullable) ? " NULL" : " NOT NULL";
 
             return rtn;

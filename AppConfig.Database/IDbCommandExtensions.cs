@@ -74,6 +74,37 @@ namespace AppConfig.Database
 
         #region Execute Managed
         /// <summary>
+        /// Executes a scalar command just like the ExecuteScalar function but manages opening and closing
+        /// the connection if required and provides detailed error messages if the command fails.
+        /// </summary>
+        /// <param name="Command"></param>
+        public static object ExecuteScalarManaged(this IDbCommand Command)
+        {
+            if (Command.Connection == null)
+                throw new Exception("To execute this command a connection object is required.");
+
+            bool closeConnection = false;
+            if (Command.Connection.State == ConnectionState.Closed)
+            {
+                Command.Connection.Open();
+                closeConnection = true;
+            }
+
+            try
+            {
+                return Command.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                throw new DbCommandException(Command, ex);
+            }
+            finally
+            {
+                if (closeConnection)
+                    Command.Connection.Close();
+            }
+        }
+        /// <summary>
         /// Executes a non query command just like the ExecuteNonQuery function but manages opening and closing
         /// the connection if required and provides detailed error messages if the command fails.
         /// </summary>

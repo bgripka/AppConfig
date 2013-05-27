@@ -26,7 +26,7 @@ namespace AppConfig.Database.SampleApp
                     BindToTreeView(Northwind.Current.Products.Where(a => new string[] { "ToFu", "Filo Mix" }.Contains(a.ProductName)));
                     break;
                 case "Order By Product Name":
-                    BindToTreeView(Northwind.Current.Products.Select(a => new { a.ProductID, a.ProductName }, a => a.ProductName, 0, 50));
+                    BindToTreeView(Northwind.Current.Products.OrderBy(a => a.ProductName, 0, 50));
                     break;
                 case "Save New Product":
                     var product = new Product()
