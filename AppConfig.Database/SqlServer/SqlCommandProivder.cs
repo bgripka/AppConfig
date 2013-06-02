@@ -5,6 +5,7 @@ using System.Text;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace AppConfig.Database.SqlServer
 {
@@ -253,113 +254,97 @@ namespace AppConfig.Database.SqlServer
 
         public string TranslateSelectClause<T>(Expression<Func<T, dynamic>> SelectClause)
         {
-            var rtn = ParseExpression(SelectClause.Body);
+            var rtn = ParseExpression<T>(SelectClause.Body);
             return rtn;
         }
 
         public string TranslateWhereClause<T>(Expression<Func<T, bool>> WhereClause)
         {
-            var rtn = ParseExpression(WhereClause.Body);
+            var rtn = ParseExpression<T>(WhereClause.Body);
             return rtn;
         }
 
         public string TranslateOrderByClause<T>(Expression<Func<T, dynamic>> OrderByClause)
         {
-            var rtn = ParseExpression(OrderByClause.Body);
+            var rtn = ParseExpression<T>(OrderByClause.Body);
             return rtn;
         }
 
-        private string ParseExpression(Expression exp)
+        private string ParseExpression<T>(Expression exp)
         {
             switch (exp.NodeType)
             {
                 case ExpressionType.AndAlso:
                 {
                     var tExp = exp as BinaryExpression;
-                    return ParseExpression(tExp.Left) + " and " + ParseExpression(tExp.Right);
+                    return ParseExpression<T>(tExp.Left) + " and " + ParseExpression<T>(tExp.Right);
                 }
                 case ExpressionType.Constant:
                 {
                     var tExp = exp as ConstantExpression;
-                    if (tExp.Type == typeof(string))
-                    {
-                        if (tExp.Value == null)
-                            return "null";
-                        else
-                            return "'" + ((string)tExp.Value).Replace("'", "''") + "'";
-                    }
-                    else if (tExp.Type == typeof(DateTime))
-                    {
-                        if (tExp.Value == null)
-                            return "null";
-                        else
-                            return string.Format("'{0:g}'", (DateTime)tExp.Value);
-                    }
-                    else if (new Type[] { typeof(int), typeof(double), typeof(Int16), typeof(Int64), typeof(decimal) }.Contains(tExp.Type))
-                    {
-                        if (tExp.Value == null)
-                            return "null";
-                        else
-                            return Convert.ToString(tExp.Value);
-                    }
-                    else
-                        throw new NotImplementedException("A constant expression for type '" + tExp.Type.FullName + "' is not supported.");
+                    return ParseConstantValue(tExp.Value);
                 }
                 case ExpressionType.Equal:
                 {
                     var tExp = exp as BinaryExpression;
-                    return ParseExpression(tExp.Left) + " = " + ParseExpression(tExp.Right);
+                    return ParseExpression<T>(tExp.Left) + " = " + ParseExpression<T>(tExp.Right);
                 }
                 case ExpressionType.GreaterThan:
                 {
                     var tExp = exp as BinaryExpression;
-                    return ParseExpression(tExp.Left) + " > " + ParseExpression(tExp.Right);
+                    return ParseExpression<T>(tExp.Left) + " > " + ParseExpression<T>(tExp.Right);
                 }
                 case ExpressionType.GreaterThanOrEqual:
                 {
                     var tExp = exp as BinaryExpression;
-                    return ParseExpression(tExp.Left) + " >= " + ParseExpression(tExp.Right);
+                    return ParseExpression<T>(tExp.Left) + " >= " + ParseExpression<T>(tExp.Right);
                 }
                 case ExpressionType.LessThan:
                 {
                     var tExp = exp as BinaryExpression;
-                    return ParseExpression(tExp.Left) + " < " + ParseExpression(tExp.Right);
+                    return ParseExpression<T>(tExp.Left) + " < " + ParseExpression<T>(tExp.Right);
                 }
                 case ExpressionType.LessThanOrEqual:
                 {
                     var tExp = exp as BinaryExpression;
-                    return ParseExpression(tExp.Left) + " <= " + ParseExpression(tExp.Right);
+                    return ParseExpression<T>(tExp.Left) + " <= " + ParseExpression<T>(tExp.Right);
                 }                
                 case ExpressionType.MemberAccess:
                 {
                     var tExp = exp as MemberExpression;
-                    return string.Format("t1.[{0}]", tExp.Member.Name);
+                    var columnAttribute = tExp.Member.CustomAttributes.SingleOrDefault(a => a.AttributeType == typeof(ColumnAttribute));
+                    if (tExp.Member.MemberType == MemberTypes.Property && tExp.Member.DeclaringType == typeof(T) && columnAttribute != null)
+                        return string.Format("t1.[{0}]", tExp.Member.Name);
+                    else if (tExp.Member.MemberType == MemberTypes.Field)
+                        return ParseConstantValue(((FieldInfo)tExp.Member).GetValue(((ConstantExpression)tExp.Expression).Value));
+                    else
+                        throw new NotSupportedException();
                 }
                 case ExpressionType.New:
                 {
                     var tExp = exp as NewExpression;
-                    return string.Join(", ", tExp.Arguments.Select(a => ParseExpression(a)));
+                    return string.Join(", ", tExp.Arguments.Select(a => ParseExpression<T>(a)));
                 }
                 case ExpressionType.NewArrayInit:
                 {
                     var tExp = exp as NewArrayExpression;
-                    return string.Join(", ", tExp.Expressions.Select(a => ParseExpression(a)));
+                    return string.Join(", ", tExp.Expressions.Select(a => ParseExpression<T>(a)));
                 }
                 case ExpressionType.NotEqual:
                 {
                     var tExp = exp as BinaryExpression;
-                    return ParseExpression(tExp.Left) + " <> " + ParseExpression(tExp.Right);
+                    return ParseExpression<T>(tExp.Left) + " <> " + ParseExpression<T>(tExp.Right);
                 }
                 case ExpressionType.OrElse:
                 {
                     var tExp = exp as BinaryExpression;
-                    return ParseExpression(tExp.Left) + " or " + ParseExpression(tExp.Right);
+                    return ParseExpression<T>(tExp.Left) + " or " + ParseExpression<T>(tExp.Right);
                 }
                 case ExpressionType.Call:
                 {
                     var tExp = exp as MethodCallExpression;
                     if (tExp.Method.DeclaringType == typeof(System.Linq.Enumerable) && tExp.Method.Name == "Contains")
-                        return ParseExpression(tExp.Arguments[1]) + " in(" + ParseExpression(tExp.Arguments[0]) + ")";
+                        return ParseExpression<T>(tExp.Arguments[1]) + " in(" + ParseExpression<T>(tExp.Arguments[0]) + ")";
                     else
                         throw new NotSupportedException("The Method Call '" + tExp.Method.Name + "' for Type '" + tExp.Method.DeclaringType.FullName + "' is not supported.");
                 }
@@ -368,5 +353,32 @@ namespace AppConfig.Database.SqlServer
             }
         }
 
+        private string ParseConstantValue(object Value)
+        {
+            var type = Value.GetType();
+            if (type == typeof(string))
+            {
+                if (Value == null)
+                    return "null";
+                else
+                    return "'" + ((string)Value).Replace("'", "''") + "'";
+            }
+            else if (type == typeof(DateTime))
+            {
+                if (Value == null)
+                    return "null";
+                else
+                    return string.Format("'{0:g}'", (DateTime)Value);
+            }
+            else if (new Type[] { typeof(int), typeof(double), typeof(Int16), typeof(Int64), typeof(decimal) }.Contains(type))
+            {
+                if (Value == null)
+                    return "null";
+                else
+                    return Convert.ToString(Value);
+            }
+            else
+                throw new NotImplementedException("A constant expression for type '" + type.FullName + "' is not supported.");
+        }
     }
 }

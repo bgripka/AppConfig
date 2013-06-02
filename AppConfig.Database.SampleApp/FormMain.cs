@@ -23,7 +23,8 @@ namespace AppConfig.Database.SampleApp
             switch (cmbCallFunction.Text)
             {
                 case "Get Product by Name":
-                    BindToTreeView(Northwind.Current.Products.Where(a => new string[] { "ToFu", "Filo Mix" }.Contains(a.ProductName)));
+                    string productName = "ToFu";
+                    BindToTreeView(Northwind.Current.Products.Where(a => a.ProductName == productName));
                     break;
                 case "Order By Product Name":
                     BindToTreeView(Northwind.Current.Products.OrderBy(a => a.ProductName, 0, 50));
