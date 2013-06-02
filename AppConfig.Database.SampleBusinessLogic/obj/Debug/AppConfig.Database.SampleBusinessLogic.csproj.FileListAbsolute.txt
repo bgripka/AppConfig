@@ -1,8 +1,0 @@
-C:\Code\git\AppConfig\AppConfig.Database.SampleBusinessLogic\obj\Debug\AppConfig.Database.SampleBusinessLogic.csprojResolveAssemblyReference.cache
-C:\Code\git\AppConfig\AppConfig.Database.SampleBusinessLogic\bin\Debug\AppConfig.Database.SampleBusinessLogic.dll
-C:\Code\git\AppConfig\AppConfig.Database.SampleBusinessLogic\bin\Debug\AppConfig.Database.SampleBusinessLogic.pdb
-C:\Code\git\AppConfig\AppConfig.Database.SampleBusinessLogic\bin\Debug\AppConfig.Database.dll
-C:\Code\git\AppConfig\AppConfig.Database.SampleBusinessLogic\bin\Debug\Newtonsoft.Json.dll
-C:\Code\git\AppConfig\AppConfig.Database.SampleBusinessLogic\bin\Debug\AppConfig.Database.pdb
-C:\Code\git\AppConfig\AppConfig.Database.SampleBusinessLogic\obj\Debug\AppConfig.Database.SampleBusinessLogic.dll
-C:\Code\git\AppConfig\AppConfig.Database.SampleBusinessLogic\obj\Debug\AppConfig.Database.SampleBusinessLogic.pdb
