@@ -313,12 +313,12 @@ namespace AppConfig.Database.SqlServer
                 {
                     var tExp = exp as MemberExpression;
                     var columnAttribute = tExp.Member.CustomAttributes.SingleOrDefault(a => a.AttributeType == typeof(ColumnAttribute));
-                    if (tExp.Member.MemberType == MemberTypes.Property && tExp.Member.DeclaringType == typeof(T) && columnAttribute != null)
+                    if (tExp.Member.MemberType == MemberTypes.Property && tExp.Member.DeclaringType.IsAssignableFrom(typeof(T)) && columnAttribute != null)
                         return string.Format("t1.[{0}]", tExp.Member.Name);
                     else if (tExp.Member.MemberType == MemberTypes.Field)
                         return ParseConstantValue(((FieldInfo)tExp.Member).GetValue(((ConstantExpression)tExp.Expression).Value));
                     else
-                        throw new NotSupportedException();
+                        throw new NotSupportedException("Access to member '" + tExp.Member.Name + "' is not supported.");
                 }
                 case ExpressionType.New:
                 {
