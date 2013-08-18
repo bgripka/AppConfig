@@ -171,7 +171,9 @@ namespace AppConfig.Database
                         else if (propertyType.IsEnum)
                         {
                             if (column.EnumStorageMethod == EnumStorageMethod.Text)
-                                param.Value = Enum.GetName(propertyType, value);
+                            {
+                                param.Value = (int)Enum.ToObject(propertyType, column.Property.GetValue(entity));
+                            }
                             else if (Enum.GetUnderlyingType(propertyType) == typeof(byte))
                                 param.Value = Convert.ToByte(value);
                             else if (Enum.GetUnderlyingType(propertyType) == typeof(Int16))

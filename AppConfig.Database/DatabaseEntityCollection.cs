@@ -11,6 +11,9 @@ namespace AppConfig.Database
     /// <typeparam name="T">The child type in defining items in the collection</typeparam>
     public class DatabaseEntityCollection<T> : IList<T>
     {
+
+        private int count = 1;
+
         #region IList<T> Members
 
         public int IndexOf(T item)
@@ -66,7 +69,7 @@ namespace AppConfig.Database
 
         public int Count
         {
-            get { throw new NotImplementedException(); }
+            get { return count; }
         }
 
         public bool IsReadOnly
